@@ -1,3 +1,7 @@
+import React, { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { Login } from "@/components/Auth/Login";
+import { Register } from "@/components/Auth/Register";
 import AppProviders from "@/context/AppContext";
 import Header from "@/components/Layout/Header";
 import DocumentEditor from "@/components/DocumentEditor/DocumentEditor";
@@ -155,13 +159,60 @@ function AppContent() {
   );
 }
 
+// ─── Auth Guard ────────────────────────────────────────────────────────────────
+
+function AuthGuard({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  const [view, setView] = useState<'login' | 'register'>('login');
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg)", color: "var(--text)" }}>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" style={{ borderColor: "var(--accent)" }}></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4" style={{ background: "var(--bg)", color: "var(--text)" }}>
+        <div className="w-full max-w-md p-8 rounded-xl shadow-2xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          {view === 'login' ? <Login /> : <Register />}
+          
+          <div className="mt-6 text-center text-sm" style={{ color: 'var(--text-2)' }}>
+            {view === 'login' ? (
+              <p>
+                ¿No tienes una cuenta?{' '}
+                <button onClick={() => setView('register')} className="font-semibold hover:underline" style={{ color: 'var(--accent)' }}>
+                  Regístrate
+                </button>
+              </p>
+            ) : (
+              <p>
+                ¿Ya tienes una cuenta?{' '}
+                <button onClick={() => setView('login')} className="font-semibold hover:underline" style={{ color: 'var(--accent)' }}>
+                  Inicia Sesión
+                </button>
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
+
 // ─── Root ──────────────────────────────────────────────────────────────────────
 
 function App() {
   return (
     <AppProviders>
       <TooltipProvider delayDuration={300}>
-        <AppContent />
+        <AuthGuard>
+          <AppContent />
+        </AuthGuard>
       </TooltipProvider>
     </AppProviders>
   );
