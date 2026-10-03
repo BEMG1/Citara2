@@ -8,14 +8,12 @@ export const HeaderBrand: React.FC = () => {
     <div className="flex items-center gap-2.5">
       {/* Logo */}
       <img
-        src={"images/citara-icon-512-amber.png"}
+        src={"images/Logo.png"}
         alt="Citara"
-        className="shrink-0 select-none object-contain bg-white"
+        className="shrink-0 select-none object-contain"
         style={{
-          width: 28,
           height: 28,
-          borderRadius: 8,
-          boxShadow: '0 0 0 1.5px var(--border), 0 0 0 3px var(--surface-2)',
+          borderRadius: 6,
         }}
       />
 
