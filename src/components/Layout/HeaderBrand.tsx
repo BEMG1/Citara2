@@ -8,7 +8,7 @@ export const HeaderBrand: React.FC = () => {
     <div className="flex items-center gap-2.5">
       {/* Logo */}
       <img
-        src={"images/Logo.png"}
+        src={`${import.meta.env.BASE_URL}images/LogoSF.png`}
         alt="Citara"
         className="shrink-0 select-none object-contain"
         style={{

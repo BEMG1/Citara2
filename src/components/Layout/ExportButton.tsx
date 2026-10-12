@@ -52,9 +52,9 @@ export const ExportButton: React.FC = () => {
       <button
         onClick={handleOpenExport}
         disabled={!haveText || isExportingPdf}
-        className="btn-nj primary"
+        className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#1F2B48] bg-[#162035] hover:bg-[#1C2843] text-slate-200 disabled:opacity-40 disabled:hover:bg-[#162035] disabled:cursor-not-allowed flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
       >
-        <Download size={14} strokeWidth={1.8} />
+        <Download size={13} strokeWidth={1.8} className="text-slate-400" />
         {isExportingPdf ? t('loading') : t('exportBtn')}
       </button>
 

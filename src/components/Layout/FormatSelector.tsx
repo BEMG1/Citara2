@@ -1,20 +1,32 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Check, Plus, Edit2, Trash2} from 'lucide-react';
-import { useCitationFormat, useLanguage } from '@/context/AppContext';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import React from 'react';
+/*
+import { useState, useRef, useEffect } from 'react';
+import { ChevronDown, Check, Plus, Edit2, Trash2 } from 'lucide-react';
+import { useCitationFormat } from '@/context/AppContext';
 import { type CitationFormat } from '@/utils/citationFormats';
 import { useCustomFormats } from '@/context/CustomFormatsContext';
 import { CustomFormatModal } from '../Settings/CustomFormatModal';
 import type { CustomCitationFormat } from '@/services/supabase/customFormats';
 import { useAuth } from '@/context/AuthContext';
+*/
+import { useLanguage } from '@/context/AppContext';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
+/*
 const FORMAT_ORDER: CitationFormat[] = ['apa7', 'ieee', 'upel'];
+*/
 
 export const FormatSelector: React.FC = () => {
+  const { t } = useLanguage();
+
+  /*
+  // ─── Lógica para selección y administración de otros formatos ─────────────
+  // (Comentado temporalmente: sólo se mantiene activa la norma APA 7.ª Edición.
+  //  Preparado para futuras normas como MLA e ICONTEC)
+
   const { citationFormat, setCitationFormat, customFormatId } = useCitationFormat();
   const { customFormats, deleteFormat } = useCustomFormats();
   const { user, profile } = useAuth();
-  const { t } = useLanguage();
   const [isFormatDropdownOpen, setIsFormatDropdownOpen] = useState(false);
   const formatDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -37,7 +49,6 @@ export const FormatSelector: React.FC = () => {
 
   const getFormatKey = (fmt: CitationFormat) => {
     if (fmt === 'apa7') return { label: 'formatAPA7', desc: 'formatAPA7Desc' };
-    // if (fmt === 'apa6') return { label: 'formatAPA6', desc: 'formatAPA6Desc' };
     if (fmt === 'ieee') return { label: 'formatIEEE', desc: 'formatIEEEDesc' };
     if (fmt === 'upel') return { label: 'formatUPEL', desc: 'formatUPELDesc' };
     return { label: 'formatAPA7', desc: 'formatAPA7Desc' };
@@ -73,33 +84,30 @@ export const FormatSelector: React.FC = () => {
     setIsModalOpen(true);
     setIsFormatDropdownOpen(false);
   };
+  */
 
   return (
     <>
-      <div className="relative" ref={formatDropdownRef}>
+      <div className="relative">
         <Tooltip>
           <TooltipTrigger asChild>
-            <button
+            <div
               id="citation-format-selector"
-              onClick={() => setIsFormatDropdownOpen((prev) => !prev)}
-              className="btn-nj cursor-pointer"
-              style={isFormatDropdownOpen ? { borderColor: 'var(--accent)', background: 'var(--accent-soft)', color: 'var(--accent)' } : {}}
+              className="h-8 px-3 rounded-lg border border-[#1F2B48] bg-[#162035] text-slate-200 text-xs font-semibold flex items-center gap-1.5 shadow-sm select-none cursor-default"
+              title="Norma activa"
             >
-              <span style={{ fontWeight: 600 }}>
-                {customFormatActive ? customFormatActive.name : t(activeKeys.label as any)}
-              </span>
-              <ChevronDown size={14} strokeWidth={1.6} className={`transition-transform duration-200 ${isFormatDropdownOpen ? 'rotate-180' : ''}`} style={{ color: 'var(--text-3)' }} />
-            </button>
+              <span>{t('formatAPA7') || 'APA 7ª Edición'}</span>
+            </div>
           </TooltipTrigger>
           <TooltipContent className="z-[100]">
-            <p>{t('formatSelectorTitle') || 'Citation Format'}</p>
+            <p>{t('formatAPA7Desc') || 'El estándar actual. Recomendado para la mayoría de los trabajos.'}</p>
           </TooltipContent>
         </Tooltip>
 
+        {/* 
+        ─── Menú desplegable y modal de formatos comentados ───
         {isFormatDropdownOpen && (
           <div className="absolute right-0 mt-2 w-80 rounded-xl z-50 overflow-hidden anim-slide-down" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-popover)' }}>
-            
-            {/* Built-in formats */}
             <div className="px-4 py-2.5 bg-gray-50 dark:bg-gray-800/50" style={{ borderBottom: '1px solid var(--border)' }}>
               <p className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-3)' }}>
                 {t('builtInFormats') as string}
@@ -134,7 +142,6 @@ export const FormatSelector: React.FC = () => {
               })}
             </div>
 
-            {/* Custom formats */}
             <div className="px-4 py-2.5 bg-gray-50 dark:bg-gray-800/50 border-t" style={{ borderColor: 'var(--border)', borderBottom: '1px solid var(--border)' }}>
               <p className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-3)' }}>
                 {t('customFormats') as string}
@@ -234,16 +241,16 @@ export const FormatSelector: React.FC = () => {
                 </>
               )}
             </div>
-
           </div>
         )}
-      </div>
 
-      <CustomFormatModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        formatToEdit={formatToEdit}
-      />
+        <CustomFormatModal 
+          isOpen={isModalOpen} 
+          onClose={() => setIsModalOpen(false)} 
+          formatToEdit={formatToEdit}
+        />
+        */}
+      </div>
     </>
   );
 };

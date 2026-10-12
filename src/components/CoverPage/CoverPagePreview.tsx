@@ -31,128 +31,114 @@ const CoverPagePreview: React.FC<CoverPagePreviewProps> = ({ coverPage, citation
     coverPage.institution.trim();
 
   return (
-    <div className="flex flex-col items-center">
-      <p className="text-xs font-semibold nj-text-3 uppercase tracking-wider mb-3">
-        {t('preview')}
+    <div className="flex flex-col items-center select-none">
+      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 self-center">
+        VISTA PREVIA
       </p>
 
-      {/* A4 page simulation */}
+      {/* A4 miniature white page simulation */}
       <div
-        className="w-full max-w-[260px] nj-surface-input border nj-border
-                   rounded-lg shadow-md overflow-hidden relative"
+        className="w-full max-w-[130px] sm:max-w-[145px] bg-white border border-slate-300/40 rounded-sm shadow-md overflow-hidden relative"
         style={{ aspectRatio: '210 / 297' }}
         aria-label={t('preview')}
       >
         {hasContent ? (
-          <div className="flex flex-col h-full">
-
-            {/* ── Header bar (page number for APA) ── */}
-            <div className={`flex items-center px-3 pt-2 pb-0.5 flex-shrink-0 ${coverPage.logo ? 'justify-between' : 'justify-end'}`}
+          <div className="flex flex-col h-full text-slate-900 p-2">
+            {/* Header bar (page number for APA) */}
+            <div className={`flex items-center pb-0.5 flex-shrink-0 ${coverPage.logo ? 'justify-between' : 'justify-end'}`}
                  style={{ height: '10%' }}>
               {coverPage.logo && (
-                <img src={coverPage.logo} alt="Logo" className="object-contain mix-blend-multiply" style={{ maxHeight: '0.8rem', maxWidth: '1.5rem' }} />
+                <img src={coverPage.logo} alt="Logo" className="object-contain" style={{ maxHeight: '0.75rem', maxWidth: '1.25rem' }} />
               )}
               {isAPA && (
                 <span
-                  className="nj-text-3 font-mono"
-                  style={{ fontSize: '0.42rem' }}
-                  title="Número de página (APA §2.3)"
+                  className="text-slate-400 font-mono"
+                  style={{ fontSize: '0.4rem' }}
                 >
                   1
                 </span>
               )}
             </div>
 
-            {/* ── Upper half: title block ── */}
-            {/* APA: title sits in the top ~45% of the usable area (upper half per §2.3) */}
-            {/* IEEE: title is roughly centred */}
+            {/* Upper half: title block */}
             <div
-              className="flex flex-col items-center justify-end px-4 text-center flex-shrink-0"
-              style={{ height: isIEEE ? '48%' : '40%' }}
+              className="flex flex-col items-center justify-center px-1 text-center flex-shrink-0"
+              style={{ height: isIEEE ? '45%' : '40%' }}
             >
               {coverPage.title && (
                 <p
-                  className="font-bold nj-text leading-tight"
-                  style={{ fontSize: '0.6rem' }}
+                  className="font-bold text-slate-950 leading-tight line-clamp-3"
+                  style={{ fontSize: '0.52rem' }}
                 >
                   {isIEEE ? coverPage.title.toUpperCase() : coverPage.title}
                 </p>
               )}
               {isAPA && coverPage.subtitle?.trim() && (
-                <p className="nj-text-2 mt-0.5" style={{ fontSize: '0.52rem' }}>
+                <p className="text-slate-600 mt-0.5 line-clamp-2" style={{ fontSize: '0.45rem' }}>
                   {coverPage.subtitle}
                 </p>
               )}
             </div>
 
-            {/* ── Lower half: author / institution / course / date ── */}
+            {/* Lower half: author / institution / course / date */}
             <div
-              className="flex flex-col items-center justify-start px-4 text-center gap-0.5 flex-shrink-0"
-              style={{ height: isIEEE ? '38%' : '40%' }}
+              className="flex flex-col items-center justify-start px-1 text-center gap-0.5 flex-shrink-0 text-slate-700"
+              style={{ height: isIEEE ? '40%' : '42%' }}
             >
-              {/* Extra spacing for APA between title block and authors */}
-              {isAPA && <div style={{ height: '1rem' }} />}
+              {isAPA && <div style={{ height: '0.5rem' }} />}
 
               {coverPage.authors && (
-                <div className="nj-text" style={{ fontSize: '0.5rem' }}>
+                <div className="font-medium text-slate-900 leading-tight" style={{ fontSize: '0.44rem' }}>
                   {coverPage.authors.split('\n').map((author: string, idx: number) => (
-                    <div key={idx}>{author}</div>
+                    <div key={idx} className="truncate">{author}</div>
                   ))}
                 </div>
               )}
               {coverPage.institution && (
-                <p className="text-gray-600 dark:text-gray-400" style={{ fontSize: '0.48rem' }}>
+                <p className="text-slate-600 truncate max-w-full" style={{ fontSize: '0.4rem' }}>
                   {coverPage.institution}
                 </p>
               )}
               {coverPage.faculty && (
-                <p className="text-gray-600 dark:text-gray-400" style={{ fontSize: '0.48rem' }}>
+                <p className="text-slate-500 truncate max-w-full" style={{ fontSize: '0.38rem' }}>
                   {coverPage.faculty}
                 </p>
               )}
               {!isIEEE && coverPage.course && (
-                <p className="text-gray-600 dark:text-gray-400" style={{ fontSize: '0.46rem' }}>
+                <p className="text-slate-500 truncate max-w-full" style={{ fontSize: '0.38rem' }}>
                   {coverPage.course}
                 </p>
               )}
               {!isIEEE && coverPage.teacher && (
-                <p className="text-gray-600 dark:text-gray-400" style={{ fontSize: '0.46rem' }}>
+                <p className="text-slate-500 truncate max-w-full" style={{ fontSize: '0.38rem' }}>
                   {coverPage.teacher}
                 </p>
               )}
               {(coverPage.city || coverPage.date) && (
-                <p className="nj-text-3 mt-0.5" style={{ fontSize: '0.46rem' }}>
+                <p className="text-slate-400 truncate max-w-full" style={{ fontSize: '0.38rem' }}>
                   {[coverPage.city, coverPage.date].filter(Boolean).join(', ')}
                 </p>
               )}
             </div>
 
-            {/* ── Bottom flex fill ── */}
             <div className="flex-1" />
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center h-full gap-2 px-4">
-            <div className="w-12 h-0.5 nj-surface-3 rounded" />
-            <div className="w-16 h-0.5 nj-surface-3 rounded" />
-            <div className="w-10 h-0.5 nj-surface-3 rounded" />
-            <p className="nj-text-3 text-center mt-3" style={{ fontSize: '0.48rem' }}>
-              {t('fillFieldsToPreview')}
+          <div className="flex flex-col items-center justify-center h-full gap-1.5 px-2">
+            <div className="w-8 h-0.5 bg-slate-200 rounded" />
+            <div className="w-12 h-0.5 bg-slate-200 rounded" />
+            <div className="w-6 h-0.5 bg-slate-200 rounded" />
+            <p className="text-slate-400 text-center mt-2 leading-tight px-1" style={{ fontSize: '0.44rem' }}>
+              Completá los campos para ver la vista previa
             </p>
           </div>
         )}
       </div>
 
-      {/* APA layout hint */}
-      {hasContent && isAPA && (
-        <p className="mt-1.5 nj-text-3 text-center leading-tight" style={{ fontSize: '0.6rem' }}>
-          {t('apaHint')}
-        </p>
-      )}
-
       {/* Format badge */}
-      <div className="mt-2 px-2 py-0.5 rounded-full nj-bg-accent-s border nj-border">
-        <span className="text-xs nj-accent font-medium">
-          {citationFormat === 'apa7' ? 'APA 7ª Ed.' :  citationFormat === 'upel' ? 'UPEL' : 'IEEE'}
+      <div className="mt-2 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
+        <span className="text-[10px] text-blue-400 font-medium">
+          {citationFormat === 'apa7' ? 'APA 7.ª' : citationFormat === 'upel' ? 'UPEL' : 'IEEE'}
         </span>
       </div>
     </div>
