@@ -39,8 +39,8 @@ const DocumentTitle: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center space-x-2 mb-4 border-b nj-border pb-2 shrink-0 group">
-      <FileText className="h-5 w-5 nj-text-3" />
+    <div className="flex items-center space-x-2.5 mb-3 shrink-0 group">
+      <FileText className="h-4 w-4 text-slate-400 shrink-0" strokeWidth={1.8} />
       {isEditing ? (
         <input
           ref={inputRef}
@@ -49,18 +49,18 @@ const DocumentTitle: React.FC = () => {
           onChange={(e) => setTempTitle(e.target.value)}
           onBlur={handleSave}
           onKeyDown={handleKeyDown}
-          className="text-lg font-medium nj-text bg-transparent border-b-2 focus:outline-none w-full max-w-sm"
-          style={{ borderColor: 'var(--accent)' }}
+          className="text-sm font-medium text-white bg-slate-800/80 px-2 py-0.5 rounded border border-blue-500/60 focus:outline-none w-full max-w-xs"
         />
       ) : (
         <div 
-          className="flex items-center cursor-pointer max-w-sm"
+          className="flex items-center cursor-pointer max-w-sm rounded px-1 -mx-1 py-0.5 hover:bg-slate-800/30 transition-colors"
           onClick={() => setIsEditing(true)}
+          title="Haz clic para editar el nombre"
         >
-          <h2 className="text-lg font-medium nj-text truncate">
+          <h2 className="text-sm font-semibold text-white tracking-tight truncate">
             {documentTitle || t('documentTitle')}
           </h2>
-          <Edit2 className="h-4 w-4 ml-2 nj-text-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Edit2 className="h-3 w-3 ml-2 text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       )}
     </div>

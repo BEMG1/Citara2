@@ -22,157 +22,148 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null)
-  const [profile, setProfile] = useState<UserProfile | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    /* --- LÓGICA ORIGINAL SUPABASE ---
-    // Restaurar sesión al inicio
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        fetchProfile(session.user.id)
-      } else {
-        setLoading(false)
-      }
-    })
-
-    // Escuchar cambios de estado de autenticación
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session)
-        setUser(session?.user ?? null)
-        
-        if (session?.user) {
-          fetchProfile(session.user.id)
-        } else {
-          setProfile(null)
-          setLoading(false)
-        }
-      }
-    )
-
-    return () => subscription.unsubscribe()
-    ----------------------------------- */
-    
-    // MOCK: Omitimos la consulta a la BD (Supabase) y cargamos instantáneamente
-    setLoading(false)
-  }, [])
-
-  const fetchProfile = async (userId: string) => {
-    /* --- LÓGICA ORIGINAL SUPABASE ---
+  const fetchProfile = async (userId: string, emailFallback?: string) => {
     try {
       const { data, error } = await supabase
         .from('users')
         .select('*')
         .eq('id', userId)
-        .single()
+        .single();
 
       if (error) {
-        console.error('Error al obtener el perfil de usuario:', error)
+        console.warn('Perfil en tabla users:', error.message);
+        // Fallback si el usuario no tiene fila en la tabla users todavía
+        setProfile({
+          id: userId,
+          email: emailFallback || '',
+          userType: 0,
+          lastGeneration: null,
+        });
       } else if (data) {
         setProfile({
           id: data.id,
           email: data.email,
-          userType: data.user_type,
-          lastGeneration: data.last_generation
-        })
+          userType: Number(data.user_type) || data.plan_type || 0,
+          lastGeneration: data.last_generation,
+        });
       }
     } catch (err) {
-      console.error('Error de red al obtener perfil:', err)
+      console.error('Error al obtener perfil:', err);
+      setProfile({
+        id: userId,
+        email: emailFallback || '',
+        userType: 0,
+        lastGeneration: null,
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-    ----------------------------------- */
-  }
+  };
 
-  const signUp = async (email: string, password: string, userType: number) => {
-    /* --- LÓGICA ORIGINAL SUPABASE ---
-    // Fase 1: Auth
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    })
-
-    if (error) return { error }
-
-    // Fase 2: Insertar en la tabla users
-    if (data.user) {
-      const { error: insertError } = await supabase
-        .from('users')
-        .insert([
-          { id: data.user.id, email: email, user_type: userType }
-        ])
-
-      if (insertError) {
-        return { error: insertError }
+  useEffect(() => {
+    // 1. Restaurar sesión existente al cargar la aplicación
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchProfile(session.user.id, session.user.email);
+      } else {
+        setLoading(false);
       }
+    }).catch((err) => {
+      console.error('Error al restaurar sesión inicial:', err);
+      setLoading(false);
+    });
+
+    // 2. Escuchar cambios de estado de autenticación (Login, Logout, Token Refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          await fetchProfile(session.user.id, session.user.email);
+        } else {
+          setProfile(null);
+          setLoading(false);
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const signUp = async (email: string, password: string, userType: number = 0) => {
+    try {
+      // Fase 1: Registrar en Supabase Auth
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (error) return { error };
+
+      // Fase 2: Insertar fila en tabla pública users (si no se maneja por triggers de Postgres)
+      if (data.user) {
+        const { error: insertError } = await supabase
+          .from('users')
+          .insert([
+            { id: data.user.id, email: email, user_type: userType }
+          ]);
+
+        if (insertError) {
+          console.warn('Nota sobre inserción en tabla users:', insertError.message);
+        }
+      }
+
+      return { error: null };
+    } catch (err: any) {
+      return { error: err };
     }
-
-    return { error: null }
-    ----------------------------------- */
-
-    // MOCK: Simular registro exitoso
-    return { error: null }
-  }
+  };
 
   const signIn = async (email: string, password: string) => {
-    /* --- LÓGICA ORIGINAL SUPABASE ---
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    return { error }
-    ----------------------------------- */
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    // MOCK: Quemamos un usuario exitoso sin consultar la BD
-    const mockUser = {
-      id: 'mock-user-123',
-      email: email,
-      app_metadata: {},
-      user_metadata: {},
-      aud: 'authenticated',
-      created_at: new Date().toISOString(),
-    } as User
+      if (error) return { error };
 
-    setUser(mockUser)
-    setProfile({
-      id: 'mock-user-123',
-      email: email,
-      userType: 1, // Premium por defecto
-      lastGeneration: null
-    })
-    setSession({
-      access_token: 'mock-token',
-      refresh_token: 'mock-token',
-      expires_in: 3600,
-      token_type: 'bearer',
-      user: mockUser
-    })
-    
-    return { error: null }
-  }
+      if (data.user) {
+        setUser(data.user);
+        setSession(data.session);
+        await fetchProfile(data.user.id, data.user.email);
+      }
+
+      return { error: null };
+    } catch (err: any) {
+      return { error: err };
+    }
+  };
 
   const signOut = async () => {
-    /* --- LÓGICA ORIGINAL SUPABASE ---
-    const { error } = await supabase.auth.signOut()
-    if (!error) {
-      setUser(null)
-      setProfile(null)
-      setSession(null)
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (!error) {
+        setUser(null);
+        setProfile(null);
+        setSession(null);
+      }
+      return { error };
+    } catch (err: any) {
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+      return { error: err };
     }
-    return { error }
-    ----------------------------------- */
-
-    // MOCK
-    setUser(null)
-    setProfile(null)
-    setSession(null)
-    return { error: null }
-  }
+  };
 
   return (
     <AuthContext.Provider value={{ user, profile, session, loading, signUp, signIn, signOut }}>

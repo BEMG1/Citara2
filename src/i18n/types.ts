@@ -118,6 +118,29 @@ export interface TranslationDictionary {
   heading2: string;
   heading3: string;
   paragraph: string;
+  boldTooltip: string;
+  italicTooltip: string;
+  underlineTooltip: string;
+  clearFormatTooltip: string;
+  bulletListTooltip: string;
+  orderedListTooltip: string;
+  alignLeftTooltip: string;
+  alignCenterTooltip: string;
+  alignRightTooltip: string;
+  autoIndentTooltip: string;
+  insertTable: string;
+  insertCuadro: string;
+  loadUpelTemplate: string;
+  loadUpelTemplatePrompt: string;
+  upelTemplateDesc: string;
+  dragDocHereTitle: string;
+  dragDocHereDesc: string;
+  chooseDocxBtn: string;
+  orDirectWriting: string;
+  footerDragHint: string;
+  wordSingular: string;
+  wordPlural: string;
+  docNormalizedNotice: string;
 
   // Cover Page
   coverPageToggle: string;

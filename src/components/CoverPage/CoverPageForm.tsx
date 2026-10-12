@@ -1,9 +1,10 @@
 import React, { useId } from 'react';
-import { RotateCcw, FileImage, ToggleLeft, ToggleRight, Info, Upload, Trash2, Image as ImageIcon } from 'lucide-react';
+import { RotateCcw, FileText, Info, Upload, Trash2 } from 'lucide-react';
 import { useCoverPage, useLanguage } from '@/context/AppContext';
 import { useCitationFormat } from '@/context/AppContext';
 import type { ICoverPageData } from '@/interfaces/ICoverPage';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Switch } from '@/components/ui/switch';
 import CoverPagePreview from './CoverPagePreview';
 import DatePickerField from './DatePickerField';
 
@@ -74,7 +75,7 @@ const FIELD_DEFS: FieldDef[] = [
   {
     key: 'date',
     labelKey: 'coverDate',
-    placeholderKey: 'coverDate', // Date does not have a real placeholder
+    placeholderKey: 'coverDate',
     required: true,
     formats: ['apa7', 'apa6', 'ieee', 'upel'],
   },
@@ -91,21 +92,20 @@ interface FormFieldProps {
 }
 
 const FormField: React.FC<FormFieldProps> = ({ id, def, value, onChange, t }) => (
-  <div className="flex flex-col gap-1">
+  <div className="flex flex-col gap-1.5">
     <label
       htmlFor={id}
-      className="flex items-center gap-1.5 text-sm font-medium"
-      style={{ color: 'var(--text)' }}
+      className="flex items-center gap-1 text-xs font-medium text-slate-300"
     >
       {t(def.labelKey) as string}
       {def.required && (
-        <span className="text-xs" style={{ color: 'var(--err)' }} aria-label="campo obligatorio">*</span>
+        <span className="text-blue-400 font-bold" aria-label="campo obligatorio">*</span>
       )}
       {def.hintKey && (
         <Tooltip>
           <TooltipTrigger asChild>
-            <span>
-              <Info className="h-3.5 w-3.5" style={{ color: 'var(--text-3)' }} />
+            <span className="cursor-help inline-flex">
+              <Info className="h-3 w-3 text-slate-500 hover:text-slate-300 transition-colors" />
             </span>
           </TooltipTrigger>
           <TooltipContent>
@@ -114,25 +114,14 @@ const FormField: React.FC<FormFieldProps> = ({ id, def, value, onChange, t }) =>
         </Tooltip>
       )}
     </label>
-    {def.key === 'authors' ? (
-      <textarea
-        id={id}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={t(def.placeholderKey) as string}
-        className="input-nj resize-y"
-        rows={2}
-      />
-    ) : (
-      <input
-        id={id}
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={t(def.placeholderKey) as string}
-        className="input-nj"
-      />
-    )}
+    <input
+      id={id}
+      type="text"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={t(def.placeholderKey) as string}
+      className="w-full px-3 py-2 text-xs rounded-lg border border-[#1F2B48] bg-[#0E1424] text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all"
+    />
   </div>
 );
 
@@ -148,8 +137,8 @@ const CoverPageForm: React.FC = () => {
     f.formats.includes(citationFormat as 'apa7' | 'apa6' | 'ieee'),
   );
 
-  const handleToggle = () => {
-    updateField('enabled', !coverPage.enabled);
+  const handleToggle = (checked: boolean) => {
+    updateField('enabled', checked);
   };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -167,145 +156,95 @@ const CoverPageForm: React.FC = () => {
     updateField('logo', null);
   };
 
-  return (
-    <div className="flex flex-col gap-5">
+  // Group fields so teacher and city sit on the same row if both present
+  const mainFields = activeFields.filter((f) => f.key !== 'teacher' && f.key !== 'city' && f.key !== 'date');
+  const teacherDef = activeFields.find((f) => f.key === 'teacher');
+  const cityDef = activeFields.find((f) => f.key === 'city');
+  const dateDef = activeFields.find((f) => f.key === 'date');
 
-      {/* ── Enable / disable toggle ── */}
+  return (
+    <div className="flex flex-col gap-4">
+
+      {/* ── Item 11: Switch para incluir portada en la exportación ── */}
       <div
-        className="flex items-center justify-between p-3 rounded-lg"
-        style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }}
+        className="flex items-center justify-between p-3.5 rounded-xl border border-[#1F2B48] bg-[#162035] shadow-sm"
       >
-        <div className="flex items-center gap-2">
-          <FileImage className="h-4 w-4" style={{ color: 'var(--accent)' }} />
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
+            <FileText className="h-4 w-4" strokeWidth={1.8} />
+          </div>
           <div>
-            <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+            <p className="text-xs font-semibold text-white">
               {t('includeCoverPage')}
             </p>
-            <p className="text-xs" style={{ color: 'var(--text-2)' }}>
+            <p className="text-[11px] text-slate-400">
               {t('includeCoverPageDesc')}
             </p>
           </div>
         </div>
-        <button
+        <Switch
           id="cover-page-toggle"
-          onClick={handleToggle}
-          aria-pressed={coverPage.enabled}
+          checked={coverPage.enabled}
+          onCheckedChange={handleToggle}
           aria-label={coverPage.enabled ? t('disableCoverPage') : t('enableCoverPage')}
-          className="flex-shrink-0 transition-all duration-200 rounded focus:outline-none cursor-pointer"
-        >
-          {coverPage.enabled ? (
-            <ToggleRight className="h-8 w-8" style={{ color: 'var(--accent)' }} />
-          ) : (
-            <ToggleLeft className="h-8 w-8" style={{ color: 'var(--text-3)' }} />
-          )}
-        </button>
+        />
       </div>
 
-      {/* ── Logo Uploader ── */}
+      {/* ── Item 12 & 13 Upper section: Logo (Left) + Vista Previa (Right) ── */}
       <div
-        className={`flex flex-col gap-2 transition-opacity duration-200 ${
+        className={`grid grid-cols-1 sm:grid-cols-2 gap-4 items-start transition-opacity duration-200 ${
           coverPage.enabled ? 'opacity-100' : 'opacity-40 pointer-events-none select-none'
         }`}
       >
-        <div className="flex items-center gap-1.5">
-          <label className="flex items-center gap-1.5 text-sm font-medium" style={{ color: 'var(--text)' }}>
-            <ImageIcon className="h-4 w-4" style={{ color: 'var(--text-3)' }} />
-            {t('institutionalLogo') as string}
-          </label>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="flex items-center">
-                <Info className="h-3.5 w-3.5" style={{ color: 'var(--text-3)' }} />
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{t('suggestionLogo') as string}</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-        {coverPage.logo ? (
-          <div className="flex items-center gap-3 p-3 rounded-lg border" style={{ borderColor: 'var(--border)', background: 'var(--surface-2)' }}>
-            <img src={coverPage.logo} alt="Logo" className="h-10 w-auto object-contain bg-white rounded p-0.5 border" style={{ borderColor: 'var(--border)' }} />
-            <div className="flex gap-2 ml-auto">
-              <label className="btn-nj sm cursor-pointer">
-                <Upload size={13} />
-                {t('replaceLogo') as string}
-                <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
-              </label>
-              <button onClick={handleLogoRemove} className="btn-nj sm" style={{ color: 'var(--err)', borderColor: 'var(--err)' }}>
-                <Trash2 size={13} />
-                {t('deleteLogo') as string}
-              </button>
-            </div>
+        {/* Logo Uploader */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-1.5">
+            <label className="text-xs font-medium text-slate-300">
+              {t('institutionalLogo') as string}
+            </label>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="cursor-help inline-flex">
+                  <Info className="h-3 w-3 text-slate-500 hover:text-slate-300 transition-colors" />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t('suggestionLogo') as string}</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
-        ) : (
-          <label className="flex flex-col items-center justify-center p-4 rounded-lg border border-dashed cursor-pointer hover:bg-[color:var(--surface-3)] transition-colors" style={{ borderColor: 'var(--border)' }}>
-            <Upload className="h-5 w-5 mb-2" style={{ color: 'var(--text-3)' }} />
-            <span className="text-sm font-medium" style={{ color: 'var(--text-2)' }}>{t('uploadLogo') as string}</span>
-            <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
-          </label>
-        )}
-      </div>
 
-      {/* ── Form + Preview (two-column on medium+) ── */}
-      <div className="flex flex-col xl:flex-row gap-5">
-
-        {/* Form fields */}
-        <div
-          className={`relative flex-1 flex flex-col gap-3.5 transition-opacity duration-200 ${
-            coverPage.enabled ? 'opacity-100' : 'opacity-40 pointer-events-none select-none'
-          }`}
-        >
-          {activeFields.map((def) => {
-            const rawValue = coverPage[def.key];
-            const value = typeof rawValue === 'string' ? rawValue : '';
-
-            // Date field → custom calendar picker
-            if (def.key === 'date') {
-              return (
-                <DatePickerField
-                  key={def.key as string}
-                  id={`${baseId}-${def.key as string}`}
-                  label={t(def.labelKey) as string}
-                  value={value}
-                  required={def.required}
-                  onChange={(val) => updateField('date', val)}
-                />
-              );
-            }
-
-            return (
-              <FormField
-                key={def.key as string}
-                id={`${baseId}-${def.key as string}`}
-                def={def}
-                value={value}
-                onChange={(val) => updateField(def.key, val as ICoverPageData[typeof def.key])}
-                t={t}
-              />
-            );
-          })}
-
-          {/* Reset button */}
-          <button
-            id="cover-page-reset"
-            onClick={resetCoverPage}
-            className="mt-1 flex items-center gap-1.5 text-xs transition-colors self-start"
-            style={{ color: 'var(--text-3)' }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'var(--err)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-3)')}
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-            {t('resetFields')}
-          </button>
+          {coverPage.logo ? (
+            <div className="flex items-center gap-3 p-2.5 rounded-xl border border-[#1F2B48] bg-[#162035]">
+              <img src={coverPage.logo} alt="Logo" className="h-10 w-auto object-contain bg-white rounded p-1 border border-slate-700/50" />
+              <div className="flex flex-col gap-1.5 ml-auto">
+                <label className="px-2 py-1 text-[11px] font-medium rounded border border-[#26375A] bg-[#1B2640] hover:bg-[#223052] text-slate-200 transition-colors cursor-pointer flex items-center gap-1">
+                  <Upload size={11} />
+                  {t('replaceLogo') as string}
+                  <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+                </label>
+                <button
+                  type="button"
+                  onClick={handleLogoRemove}
+                  className="px-2 py-1 text-[11px] font-medium rounded text-rose-400 hover:bg-rose-500/10 border border-rose-500/20 transition-colors flex items-center gap-1 cursor-pointer"
+                >
+                  <Trash2 size={11} />
+                  {t('deleteLogo') as string}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <label className="h-[145px] flex flex-col items-center justify-center p-4 rounded-xl border border-dashed border-[#243354] hover:border-blue-500/50 bg-[#162035]/40 hover:bg-[#162035] cursor-pointer transition-all group">
+              <Upload className="h-5 w-5 mb-2 text-slate-400 group-hover:text-blue-400 transition-colors" />
+              <span className="text-xs font-semibold text-slate-300 group-hover:text-white transition-colors">{t('uploadLogo') as string}</span>
+              <span className="text-[10px] text-slate-500 mt-0.5">PNG, JPG o SVG</span>
+              <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+            </label>
+          )}
         </div>
 
-        {/* Preview column */}
-        <div
-          className={`xl:w-[200px] flex-shrink-0 transition-opacity duration-200 ${
-            coverPage.enabled ? 'opacity-100' : 'opacity-30'
-          }`}
-        >
+        {/* Live Preview Column (Item 13) */}
+        <div className="flex flex-col items-center justify-center">
           <CoverPagePreview
             coverPage={coverPage}
             citationFormat={citationFormat as 'apa7' | 'apa6' | 'ieee'}
@@ -313,14 +252,83 @@ const CoverPageForm: React.FC = () => {
         </div>
       </div>
 
+      {/* ── Form fields (Item 12) ── */}
+      <div
+        className={`flex flex-col gap-3 transition-opacity duration-200 ${
+          coverPage.enabled ? 'opacity-100' : 'opacity-40 pointer-events-none select-none'
+        }`}
+      >
+        {mainFields.map((def) => {
+          const rawValue = coverPage[def.key];
+          const value = typeof rawValue === 'string' ? rawValue : '';
+
+          return (
+            <FormField
+              key={def.key as string}
+              id={`${baseId}-${def.key as string}`}
+              def={def}
+              value={value}
+              onChange={(val) => updateField(def.key, val as ICoverPageData[typeof def.key])}
+              t={t}
+            />
+          );
+        })}
+
+        {/* Two-column row for Docente and Ciudad */}
+        {(teacherDef || cityDef) && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {teacherDef && (
+              <FormField
+                key={teacherDef.key as string}
+                id={`${baseId}-${teacherDef.key as string}`}
+                def={teacherDef}
+                value={typeof coverPage.teacher === 'string' ? coverPage.teacher : ''}
+                onChange={(val) => updateField('teacher', val)}
+                t={t}
+              />
+            )}
+            {cityDef && (
+              <FormField
+                key={cityDef.key as string}
+                id={`${baseId}-${cityDef.key as string}`}
+                def={cityDef}
+                value={typeof coverPage.city === 'string' ? coverPage.city : ''}
+                onChange={(val) => updateField('city', val)}
+                t={t}
+              />
+            )}
+          </div>
+        )}
+
+        {/* Date Field (if applicable) */}
+        {dateDef && (
+          <DatePickerField
+            id={`${baseId}-${dateDef.key as string}`}
+            label={t(dateDef.labelKey) as string}
+            value={typeof coverPage.date === 'string' ? coverPage.date : ''}
+            required={dateDef.required}
+            onChange={(val) => updateField('date', val)}
+          />
+        )}
+
+        {/* Reset fields button */}
+        <button
+          id="cover-page-reset"
+          onClick={resetCoverPage}
+          className="mt-1 flex items-center gap-1.5 text-xs text-slate-400 hover:text-rose-400 transition-colors self-start cursor-pointer"
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
+          {t('resetFields')}
+        </button>
+      </div>
+
       {/* Format notice */}
       {coverPage.enabled && (
         <div
-          className="flex items-start gap-2 p-3 rounded-lg"
-          style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }}
+          className="flex items-start gap-2.5 p-3 rounded-xl border border-[#1F2B48] bg-[#162035]"
         >
-          <Info className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--accent)' }} />
-          <p className="text-xs leading-relaxed" style={{ color: 'var(--text-2)' }}>
+          <Info className="h-4 w-4 flex-shrink-0 mt-0.5 text-blue-400" />
+          <p className="text-xs leading-relaxed text-slate-300">
             {citationFormat === 'ieee'
               ? t('ieeeCoverNotice')
               : citationFormat === 'apa7'
