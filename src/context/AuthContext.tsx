@@ -17,6 +17,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, userType: number) => Promise<{ error: Error | null }>
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>
   signOut: () => Promise<{ error: Error | null }>
+  updateUserType: (newUserType: number) => Promise<{ error: Error | null }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -165,8 +166,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateUserType = async (newUserType: number) => {
+    try {
+      if (!user) {
+        return { error: new Error('No hay usuario autenticado') };
+      }
+
+      // 1. Actualizar estado local inmediatamente para reactividad instantánea
+      setProfile(prev => prev ? { ...prev, userType: newUserType } : {
+        id: user.id,
+        email: user.email || '',
+        userType: newUserType,
+        lastGeneration: null,
+      });
+
+      // 2. Intentar actualizar o registrar en la tabla users de Supabase si está disponible
+      const { error } = await supabase
+        .from('users')
+        .upsert({ id: user.id, email: user.email, user_type: newUserType }, { onConflict: 'id' });
+
+      if (error) {
+        console.warn('Advertencia al sincronizar con Supabase (modo simulado activo):', error.message);
+      }
+
+      return { error: null };
+    } catch (err: any) {
+      console.error('Error al actualizar tipo de usuario:', err);
+      return { error: err };
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, profile, session, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, profile, session, loading, signUp, signIn, signOut, updateUserType }}>
       {children}
     </AuthContext.Provider>
   )
